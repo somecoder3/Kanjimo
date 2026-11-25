@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Kanjimo</title>
+    <meta name="description" content="Lerne Kanji spielerisch mit Mo, dem kleinen Tintentropfen." />
+    <meta name="theme-color" content="#fbf6ee" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16182b" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Kanjimo" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <script>
+      // Design vor dem ersten Zeichnen setzen (kein Aufblitzen)
+      try {
+        var st = JSON.parse(localStorage.getItem('kanjimo-state-v1') || '{}')
+        var t = (st.settings && st.settings.theme) || 'auto'
+        var dark = t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch (e) {}
+    </script>
+    <style>
+      #splash { position: fixed; inset: 0; display: grid; place-items: center; background: #fbf6ee; z-index: 999; }
+      [data-theme='dark'] #splash { background: #15172a; }
+      #splash svg { width: 84px; animation: sp 1.1s ease-in-out infinite; }
+      @keyframes sp { 50% { transform: translateY(-10px) scale(1.04, .96); } }
+    </style>
+  </head>
+  <body>
+    <div id="splash" aria-label="Kanjimo lädt">
+      <svg viewBox="0 0 120 130" aria-hidden="true"><path d="M60 4 C 65 20, 104 50, 104 82 C 104 107, 85 124, 60 124 C 35 124, 16 107, 16 82 C 16 50, 55 20, 60 4 Z" fill="#24242a"/><ellipse cx="45" cy="86" rx="9" ry="10.5" fill="#fff"/><ellipse cx="75" cy="86" rx="9" ry="10.5" fill="#fff"/><circle cx="45" cy="87" r="6" fill="#0e0f26"/><circle cx="75" cy="87" r="6" fill="#0e0f26"/></svg>
+    </div>
+    <div id="root"></div>
+    <noscript>Kanjimo benötigt JavaScript.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+/* Selbst gehostete, auf Kanjimo zugeschnittene Schriften (SIL Open Font License 1.1). Erzeugt mit `npm run fonts`. */
+@font-face {
+  font-family: 'M PLUS Rounded 1c';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/m-plus-rounded-1c-latin-500.woff2') format('woff2');
+  unicode-range: U+0000-024F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+2212;
+}
+@font-face {
+  font-family: 'M PLUS Rounded 1c';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/m-plus-rounded-1c-jp-700.woff2') format('woff2');
+  unicode-range: U+3000-30FF, U+3400-9FFF, U+FF00-FFEF;
+}
+@font-face {
+  font-family: 'M PLUS Rounded 1c';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/m-plus-rounded-1c-latin-700.woff2') format('woff2');
+  unicode-range: U+0000-024F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+2212;
+}
+@font-face {
+  font-family: 'M PLUS Rounded 1c';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/m-plus-rounded-1c-jp-700.woff2') format('woff2');
+  unicode-range: U+3000-30FF, U+3400-9FFF, U+FF00-FFEF;
+}
+@font-face {
+  font-family: 'M PLUS Rounded 1c';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../fonts/m-plus-rounded-1c-latin-800.woff2') format('woff2');
+  unicode-range: U+0000-024F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+2212;
+}
+@font-face {
+  font-family: 'M PLUS Rounded 1c';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('../fonts/m-plus-rounded-1c-jp-700.woff2') format('woff2');
+  unicode-range: U+3000-30FF, U+3400-9FFF, U+FF00-FFEF;
+}
+@font-face {
+  font-family: 'Klee One';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/klee-one-latin-600.woff2') format('woff2');
+  unicode-range: U+0000-024F, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2190-2199, U+2212;
+}
+@font-face {
+  font-family: 'Klee One';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/klee-one-jp-600.woff2') format('woff2');
+  unicode-range: U+3000-30FF, U+3400-9FFF, U+FF00-FFEF;
+}
