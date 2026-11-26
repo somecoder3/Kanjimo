@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { Mo, type MoMood } from '../components/Mo'
 import { Ring } from '../components/ui'
-import { IconBolt, IconChevron, IconFlame, IconGear, IconMoon, IconPencil, IconPlay, IconSnow, IconSun } from '../components/Icons'
+import { IconBolt, IconChevron, IconCloud, IconFlame, IconGear, IconMoon, IconPencil, IconPlay, IconSnow, IconSun } from '../components/Icons'
+import { BACKUP_REMIND_DAYS, backupDue, backupLabel, shareBackup } from '../lib/backup'
+import { emit } from '../lib/events'
 import { KanjiStrokes } from '../components/KanjiStrokes'
 import { navigate } from '../lib/router'
 import { dueChars, todayStats, useStore } from '../lib/store'
@@ -172,6 +174,8 @@ export function Home() {
         </p>
       )}
 
+      {backupDue(s, today) && <BackupNudge />}
+
       <div className="quick-row">
         <button className="card tap quick" onClick={() => navigate('/spiele')}>
           <span className="quick-emoji">🎮</span>
@@ -203,6 +207,47 @@ export function Home() {
         <IconChevron width={20} height={20} style={{ color: 'var(--ink-faint)' }} />
       </button>
     </main>
+  )
+}
+
+/** Sanfte Erinnerung, den Fortschritt außerhalb des Geräts zu sichern. */
+function BackupNudge() {
+  const stats = useStore((st) => st.stats)
+  const snooze = useStore((st) => st.snoozeBackup)
+  return (
+    <section className="card backup-nudge">
+      <div className="row" style={{ gap: 14, alignItems: 'flex-start' }}>
+        <div className="ac-icon" style={{ background: 'var(--primary-soft)', color: 'var(--primary)' }}>
+          <IconCloud />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div className="bold">Fortschritt sichern?</div>
+          <div className="small muted">{backupLabel(stats)} Leg eine Kopie in Drive, iCloud oder per Mail ab – falls dein Handy mal verloren geht.</div>
+        </div>
+      </div>
+      <div className="row" style={{ gap: 10, marginTop: 12 }}>
+        <button
+          className="btn small-btn"
+          style={{ flex: 1 }}
+          onClick={async () => {
+            sfx.tap()
+            const r = await shareBackup()
+            if (r === 'shared' || r === 'downloaded') emit({ type: 'toast', icon: '☁️', text: 'Sicherung erstellt – danke!' })
+          }}
+        >
+          Jetzt sichern
+        </button>
+        <button
+          className="btn light small-btn"
+          onClick={() => {
+            sfx.tap()
+            snooze(BACKUP_REMIND_DAYS)
+          }}
+        >
+          Später
+        </button>
+      </div>
+    </section>
   )
 }
 

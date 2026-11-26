@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { snapshot, useStore, type Theme } from '../lib/store'
+import { useStore, type Theme } from '../lib/store'
 import { navigate } from '../lib/router'
 import { GOALS } from '../lib/gamification'
 import { emit } from '../lib/events'
-import { dayKey } from '../lib/date'
+import { backupLabel, canShareFiles, downloadBackup, shareBackup, type BackupResult } from '../lib/backup'
 import { canSpeak, speak } from '../lib/speech'
 import { sfx } from '../lib/feedback'
 import { Confirm, TopBar } from '../components/ui'
 import { Mo } from '../components/Mo'
-import { IconChevron, IconDownload, IconInfo, IconTrash, IconUpload } from '../components/Icons'
+import { IconChevron, IconDownload, IconInfo, IconShare, IconTrash, IconUpload } from '../components/Icons'
 
 interface BIPEvent extends Event {
   prompt: () => Promise<void>
@@ -41,6 +41,8 @@ export function Settings() {
   const update = useStore((s) => s.updateSettings)
   const resetAll = useStore((s) => s.resetAll)
   const importState = useStore((s) => s.importState)
+  const stats = useStore((s) => s.stats)
+  const [shareOk] = useState(canShareFiles)
   const [confirmReset, setConfirmReset] = useState(false)
   const [pendingImport, setPendingImport] = useState<unknown>(null)
   const [canInstall, setCanInstall] = useState(!!deferredPrompt)
@@ -54,17 +56,10 @@ export function Settings() {
     return () => window.removeEventListener('beforeinstallprompt', h)
   }, [])
 
-  const exportData = () => {
-    const blob = new Blob([JSON.stringify({ app: 'kanjimo', exportedAt: new Date().toISOString(), data: snapshot() }, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `kanjimo-sicherung-${dayKey()}.json`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    setTimeout(() => URL.revokeObjectURL(url), 2000)
-    emit({ type: 'toast', icon: '💾', text: 'Sicherung gespeichert.' })
+  const backupResult = (r: BackupResult) => {
+    if (r === 'shared') emit({ type: 'toast', icon: '☁️', text: 'Sicherung weitergegeben.' })
+    else if (r === 'downloaded') emit({ type: 'toast', icon: '💾', text: 'Sicherung gespeichert.' })
+    else if (r === 'failed') emit({ type: 'toast', icon: '⚠️', text: 'Sicherung konnte nicht erstellt werden.' })
   }
 
   const onFile = async (f: File | undefined) => {
@@ -224,11 +219,22 @@ export function Settings() {
 
       <h2 className="section-title">Daten</h2>
       <div className="card">
-        <button className="setting setting-btn" onClick={exportData}>
+        {shareOk && (
+          <button className="setting setting-btn" onClick={async () => backupResult(await shareBackup())}>
+            <IconShare width={22} height={22} />
+            <span className="s-label">
+              Sicherung teilen
+              <span className="s-hint">Z. B. „In Drive speichern“, iCloud Drive oder per Mail. {backupLabel(stats)}</span>
+            </span>
+          </button>
+        )}
+        <button className="setting setting-btn" onClick={() => backupResult(downloadBackup())}>
           <IconDownload width={22} height={22} />
           <span className="s-label">
-            Sicherung exportieren
-            <span className="s-hint">Dein Fortschritt bleibt nur auf diesem Gerät gespeichert.</span>
+            {shareOk ? 'Als Datei speichern' : 'Sicherung exportieren'}
+            <span className="s-hint">
+              {shareOk ? 'Sicherungsdatei auf dieses Gerät herunterladen.' : `Dein Fortschritt liegt nur auf diesem Gerät. ${backupLabel(stats)}`}
+            </span>
           </span>
         </button>
         <button className="setting setting-btn" onClick={() => fileRef.current?.click()}>

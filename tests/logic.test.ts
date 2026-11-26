@@ -5,6 +5,7 @@ import { distractors, makeQuestion, meaningLabel } from '../src/lib/quiz'
 import { KANJI_MAP, KANJI_ORDER } from '../src/data/kanji'
 import { initSrs, newCard, review, GRADE, mastery, isDue } from '../src/lib/srs'
 import { normalizeState } from '../src/lib/store'
+import { backupDue, backupLabel } from '../src/lib/backup'
 import { loadAllLevels } from '../src/data/levels'
 
 await loadAllLevels()
@@ -82,6 +83,14 @@ describe('Quiz', () => {
       }
     }
   })
+  it('Ablenker haben untereinander nie dieselbe Beschriftung', () => {
+    for (const c of KANJI_ORDER) {
+      for (const hard of [false, true]) {
+        const ds = distractors(c, KANJI_ORDER, 3, hard)
+        expect(new Set(ds.map(meaningLabel)).size, c).toBe(3)
+      }
+    }
+  })
   it('Fragen haben genau eine richtige Antwort und 4 eindeutige Optionen', () => {
     for (const c of KANJI_ORDER) {
       for (const t of ['meaning', 'kanji', 'reading'] as const) {
@@ -128,6 +137,23 @@ describe('FSRS', () => {
       last = interval
       now = due
     }
+  })
+})
+
+describe('Sicherungs-Erinnerung', () => {
+  const learned = Object.fromEntries(['一', '二', '三', '四', '五', '六'].map((c) => [c, {}])) as never
+  const st = (patch: object) => normalizeState({ createdAt: '2026-01-01T10:00:00Z', progress: learned, stats: patch })
+  it('erinnert erst, wenn es etwas zu verlieren gibt', () => {
+    expect(backupDue({ ...st({}), progress: {} }, '2026-03-01')).toBe(false)
+    expect(backupDue(st({}), '2026-01-03')).toBe(false)
+    expect(backupDue(st({}), '2026-01-08')).toBe(true)
+  })
+  it('wartet nach einer Sicherung 7 Tage und respektiert „Später“', () => {
+    expect(backupDue(st({ lastBackup: '2026-02-01T09:00:00Z' }), '2026-02-07')).toBe(false)
+    expect(backupDue(st({ lastBackup: '2026-02-01T09:00:00Z' }), '2026-02-08')).toBe(true)
+    expect(backupDue(st({ lastBackup: '2026-02-01T09:00:00Z', backupSnoozeUntil: '2026-02-10' }), '2026-02-08')).toBe(false)
+    expect(backupLabel(st({ lastBackup: '2026-02-01T09:00:00Z' }).stats, '2026-02-04')).toBe('Letzte Sicherung: vor 3 Tagen.')
+    expect(backupLabel(st({}).stats)).toBe('Noch keine Sicherung erstellt.')
   })
 })
 

@@ -47,12 +47,23 @@ export function distractors(char: string, pool: string[], n: number, hard = fals
     const extra = KANJI_ORDER.filter((c) => c !== char && !cands.includes(c) && !sharesMeaning(c, char))
     cands = [...cands, ...extra]
   }
+  let ordered: string[]
   if (hard) {
     const scored = shuffle(cands).map((c) => [c, similarity(char, c)] as const)
     const ranked = scored.sort((x, y) => y[1] - x[1]).map(([c]) => c)
-    return shuffle([...ranked.slice(0, Math.max(1, n - 1)), ...shuffle(ranked.slice(n - 1)).slice(0, 1)]).slice(0, n)
+    ordered = [...ranked.slice(0, Math.max(1, n - 1)), ...shuffle(ranked.slice(n - 1))]
+  } else ordered = shuffle(cands)
+  // Ablenker sollen sich auch untereinander unterscheiden (keine doppelten Antwortbeschriftungen)
+  const picked: string[] = []
+  const labels = new Set([meaningLabel(char)])
+  for (const c of ordered) {
+    const l = meaningLabel(c)
+    if (labels.has(l)) continue
+    labels.add(l)
+    picked.push(c)
+    if (picked.length === n) break
   }
-  return shuffle(cands).slice(0, n)
+  return shuffle(picked)
 }
 
 let examplesCache: { n: number; list: Example[] } | null = null

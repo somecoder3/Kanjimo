@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { get as idbGet, set as idbSet } from 'idb-keyval'
-import { dayKey } from './date'
+import { addDays, dayKey } from './date'
 import { emit } from './events'
 import { levelInfo, touchStreak, type StreakState } from './gamification'
 import { newCard, review, type Grade, type StoredCard } from './srs'
@@ -47,6 +47,10 @@ export interface Stats extends StreakState {
   highscores: Record<string, number>
   lateSessions: number
   earlySessions: number
+  /** Zeitpunkt der letzten Sicherung (ISO) */
+  lastBackup: string | null
+  /** Tag, bis zu dem die Sicherungs-Erinnerung pausiert */
+  backupSnoozeUntil: string | null
 }
 
 export interface PersistedState {
@@ -86,6 +90,8 @@ function defaultStats(): Stats {
     highscores: {},
     lateSessions: 0,
     earlySessions: 0,
+    lastBackup: null,
+    backupSnoozeUntil: null,
     streak: 0,
     bestStreak: 0,
     lastActiveDay: null,
@@ -143,6 +149,8 @@ interface Actions {
   recordWrite: (char: string) => void
   resetAll: () => void
   importState: (raw: unknown) => void
+  markBackup: () => void
+  snoozeBackup: (days: number) => void
 }
 
 export type Store = PersistedState & Actions
@@ -301,6 +309,10 @@ export const useStore = create<Store>()((set, get) => ({
   resetAll: () => set({ ...defaultState() }),
 
   importState: (raw) => set({ ...normalizeState(raw) }),
+
+  markBackup: () => set((s) => ({ stats: { ...s.stats, lastBackup: new Date().toISOString(), backupSnoozeUntil: null } })),
+
+  snoozeBackup: (days) => set((s) => ({ stats: { ...s.stats, backupSnoozeUntil: addDays(dayKey(), days) } })),
 }))
 
 function checkAchievements() {

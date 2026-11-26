@@ -157,6 +157,18 @@ export const IconUpload = (p: P) => (
     <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19.5h14" />
   </I>
 )
+export const IconShare = (p: P) => (
+  <I {...p}>
+    <path d="M12 14.5V3.5M8 7.5l4-4 4 4" />
+    <path d="M8.5 10.5H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1.5" />
+  </I>
+)
+export const IconCloud = (p: P) => (
+  <I {...p}>
+    <path d="M7 18.5a4.5 4.5 0 0 1-.6-8.96 6 6 0 0 1 11.48 1.2A3.75 3.75 0 0 1 17.25 18.5Z" />
+    <path d="M12 15.5v-5M9.75 12.5 12 10.25l2.25 2.25" />
+  </I>
+)
 export const IconTrash = (p: P) => (
   <I {...p}>
     <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13" />

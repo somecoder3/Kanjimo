@@ -14,7 +14,7 @@ Pinselstriche verwandelt und die Strichfolge vormacht.
 - **Spiele**: Blitzrunde, Paare finden, Tintenregen
 - **Motivation**: Tagesziel, Serie mit Serienschutz, XP & Level, 25 Erfolge, Aktivitätskalender
 - **Sammlung** mit Beherrschungsstufen, Detailansicht mit Bausteinen, Lesungen, Beispielwörtern und Vorlesefunktion
-- Hell-/Dunkelmodus, Töne, Vibration, Export/Import, komplett **offline** nutzbar, keine Konten, kein Tracking
+- Hell-/Dunkelmodus, Töne, Vibration, Sicherung per Teilen-Menü (z. B. Google Drive) mit Erinnerung, Export/Import, komplett **offline** nutzbar, keine Konten, kein Tracking
 
 ## Entwicklung
 
