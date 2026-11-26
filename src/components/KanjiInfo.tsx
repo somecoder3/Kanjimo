@@ -1,8 +1,28 @@
 import { KANJI_MAP } from '../data/kanji'
 import { parts } from '../data/strokes'
 import { navigate } from '../lib/router'
+import { readingRanges } from '../lib/furigana'
 import { PART_COLORS } from './KanjiStrokes'
 import { Reading, SpeakButton } from './ui'
+
+/** Lesung eines Beispielworts, in der der Anteil des Kanji farbig hervorgehoben ist. */
+function MarkedReading({ word, reading, char }: { word: string; reading: string; char: string }) {
+  const ranges = readingRanges(word, reading, char)
+  if (!ranges) return <>{reading}</>
+  const out: React.ReactNode[] = []
+  let pos = 0
+  ranges.forEach(([a, b], i) => {
+    if (a > pos) out.push(reading.slice(pos, a))
+    out.push(
+      <span key={i} className="hl">
+        {reading.slice(a, b)}
+      </span>,
+    )
+    pos = b
+  })
+  if (pos < reading.length) out.push(reading.slice(pos))
+  return <>{out}</>
+}
 
 /** Bedeutung, Lesungen, Eselsbrücke, Bausteine und Beispiele eines Kanji. */
 export function KanjiInfo({ char, showParts = true, linkParts = false }: { char: string; showParts?: boolean; linkParts?: boolean }) {
@@ -87,7 +107,9 @@ export function KanjiInfo({ char, showParts = true, linkParts = false }: { char:
               ))}
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="ex-reading">{ex.r}</div>
+              <div className="ex-reading">
+                <MarkedReading word={ex.w} reading={ex.r} char={char} />
+              </div>
               <div className="small muted">{ex.m}</div>
             </div>
             <SpeakButton text={ex.r} small />
