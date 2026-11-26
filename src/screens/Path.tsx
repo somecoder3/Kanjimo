@@ -172,6 +172,17 @@ function UnitSheet({ unit, unlocked, onClose }: { unit: Unit; unlocked: boolean;
           Tipp: Schließe zuerst die vorige Einheit ab. Wenn du die Kanji schon kennst, kannst du aber auch direkt starten.
         </p>
       )}
+      {done && (
+        <button
+          className="btn block"
+          onClick={() => {
+            onClose()
+            navigate(`/wiederholen/einheit/${unit.id}`)
+          }}
+        >
+          Nur Quiz
+        </button>
+      )}
       <button
         className={`btn block ${done ? 'light' : ''}`}
         onClick={() => {
@@ -179,7 +190,7 @@ function UnitSheet({ unit, unlocked, onClose }: { unit: Unit; unlocked: boolean;
           navigate(`/lektion/${unit.id}`)
         }}
       >
-        {done ? 'Lektion wiederholen' : unlocked ? 'Lektion starten' : 'Trotzdem starten'}
+        {done ? 'Ganze Lektion mit Schreiben' : unlocked ? 'Lektion starten' : 'Trotzdem starten'}
       </button>
       <p className="tiny faint center">
         {unit.kanji.length} Kanji · ca. {Math.round(unit.kanji.length * 1.1)} Min. · {unit.kanji.map((c) => KANJI_MAP[c].meanings[0]).join(', ')}

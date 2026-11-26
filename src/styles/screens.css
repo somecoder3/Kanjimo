@@ -1178,6 +1178,16 @@
 }
 
 /* ═════════════════════════ Spiele ═════════════════════════ */
+.quiz-card {
+  margin-bottom: 12px;
+}
+.quiz-card .segmented button {
+  font-weight: 800;
+  color: var(--primary);
+}
+.quiz-card .segmented button:active {
+  background: var(--card);
+}
 .game-card {
   display: flex !important;
   gap: 14px;

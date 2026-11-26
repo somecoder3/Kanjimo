@@ -11,7 +11,7 @@ import { Onboarding } from './screens/Onboarding'
 import { Home } from './screens/Home'
 import { PathScreen } from './screens/Path'
 import { Lesson } from './screens/Lesson'
-import { Review } from './screens/Review'
+import { Review, type ReviewMode } from './screens/Review'
 import { Collection } from './screens/Collection'
 import { KanjiDetail } from './screens/KanjiDetail'
 import { Profile } from './screens/Profile'
@@ -32,6 +32,14 @@ interface Toast {
 }
 
 let toastId = 0
+
+/** /wiederholen, /wiederholen/ueben, /wiederholen/einheit/<id>, /wiederholen/quiz/<anzahl|alle> */
+function reviewMode(b?: string, c?: string): ReviewMode {
+  if (b === 'ueben') return { kind: 'practice' }
+  if (b === 'einheit') return { kind: 'unit', id: Number(c) }
+  if (b === 'quiz') return { kind: 'all', n: c === 'alle' ? 0 : Math.max(1, Number(c) || 20) }
+  return { kind: 'due' }
+}
 
 function useTheme() {
   const theme = useStore((s) => s.settings.theme)
@@ -103,7 +111,7 @@ export function App() {
 
   let screen: React.ReactNode
   let tabs = false
-  const [, a, b] = route.split('/')
+  const [, a, b, c] = route.split('/')
 
   if (!onboarded) {
     screen = <Onboarding />
@@ -140,7 +148,7 @@ export function App() {
         screen = <Lesson key={route} unitId={Number(b)} />
         break
       case 'wiederholen':
-        screen = <Review key={route} practice={b === 'ueben'} />
+        screen = <Review key={route} mode={reviewMode(b, c)} />
         break
       case 'kanji':
         screen = <KanjiDetail key={route} char={b ?? ''} />

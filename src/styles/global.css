@@ -984,7 +984,17 @@ p {
   padding: 18px 18px calc(var(--safe-bottom) + 16px);
   border-radius: 26px 26px 0 0;
   z-index: 50;
-  animation: sheet-up 0.3s var(--ease-out);
+  /* eigenes „translate“, damit die Zentrierung per transform während der Animation erhalten bleibt */
+  animation: feedback-up 0.28s var(--ease-out);
+}
+
+@keyframes feedback-up {
+  from {
+    translate: 0 100%;
+  }
+  to {
+    translate: 0 0;
+  }
 }
 
 .feedback.good {

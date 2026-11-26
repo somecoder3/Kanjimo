@@ -41,6 +41,45 @@ const GAMES = [
   },
 ]
 
+/** Vokabel-Quiz über gelernte Kanji – ohne Schreiben, ohne Einfluss auf die Planung. */
+function QuizCard({ learned }: { learned: number }) {
+  const sizes = [10, 20, 50].filter((n) => n < learned)
+  const start = (n: number | 'alle') => {
+    sfx.tap()
+    navigate(`/wiederholen/quiz/${n}`)
+  }
+  return (
+    <section className="card quiz-card fade-up">
+      <div className="row" style={{ gap: 14 }}>
+        <span className="game-emoji" style={{ background: 'var(--matcha-soft)' }}>
+          📝
+        </span>
+        <span style={{ flex: 1 }}>
+          <span className="row" style={{ gap: 8 }}>
+            <b>Kanji-Quiz</b>
+            <span className="pill tiny">Wie Vokabeln</span>
+          </span>
+          <span className="small muted" style={{ display: 'block', marginTop: 2 }}>
+            {learned > 0
+              ? `Bedeutung, Kanji und Lesung deiner ${learned} gelernten Kanji – ganz ohne Schreiben.`
+              : 'Lerne zuerst ein paar Kanji im Lernpfad, dann kannst du sie hier abfragen.'}
+          </span>
+        </span>
+      </div>
+      {learned > 0 && (
+        <div className="segmented" role="group" aria-label="Anzahl Fragen" style={{ marginTop: 12 }}>
+          {sizes.map((n) => (
+            <button key={n} onClick={() => start(n)}>
+              {n}
+            </button>
+          ))}
+          <button onClick={() => start('alle')}>Alle {learned}</button>
+        </div>
+      )}
+    </section>
+  )
+}
+
 export function GamesHub() {
   const progress = useStore((s) => s.progress)
   const highscores = useStore((s) => s.stats.highscores)
@@ -59,6 +98,7 @@ export function GamesHub() {
           🌱 Du spielst mit Anfänger-Kanji. Sobald du {MIN_POOL} Kanji gelernt hast, nutzen die Spiele deine eigenen.
         </div>
       )}
+      <QuizCard learned={Object.keys(progress).length} />
       <div className="stack">
         {GAMES.map((g, i) => (
           <button

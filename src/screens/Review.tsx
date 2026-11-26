@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { KANJI_ORDER } from '../data/kanji'
+import { KANJI_ORDER, UNITS, unitLabel } from '../data/kanji'
 import { strokeCount } from '../data/strokes'
 import { dueChars, useStore } from '../lib/store'
 import { navigate } from '../lib/router'
-import { makeQuestion, pickType, type Question } from '../lib/quiz'
+import { buildQuiz, makeQuestion, pickType, type Question } from '../lib/quiz'
 import { shuffle } from '../lib/random'
 import { GRADE, retrievability, type Grade } from '../lib/srs'
 import { XP } from '../lib/gamification'
@@ -18,7 +18,16 @@ interface Item {
   retry: boolean
 }
 
-export function Review({ practice = false }: { practice?: boolean }) {
+/**
+ * due: fällige Wiederholungen (plant FSRS neu) · practice: freies Üben der unsichersten Kanji
+ * unit: Quiz einer Einheit · all: Quiz über gelernte Kanji (n = Anzahl, 0 = alle)
+ * Alle Modi außer „due“ beeinflussen die Planung nicht.
+ */
+export type ReviewMode = { kind: 'due' } | { kind: 'practice' } | { kind: 'unit'; id: number } | { kind: 'all'; n: number }
+
+export function Review({ mode }: { mode: ReviewMode }) {
+  const practice = mode.kind !== 'due'
+  const home = mode.kind === 'unit' ? '/pfad' : mode.kind === 'all' ? '/spiele' : '/'
   const progress = useStore((s) => s.progress)
   const settings = useStore((s) => s.settings)
   const recordReview = useStore((s) => s.recordReview)
@@ -27,16 +36,23 @@ export function Review({ practice = false }: { practice?: boolean }) {
 
   const initial = useMemo<Item[]>(() => {
     const learned = Object.keys(progress)
+    const pool = learned.length >= 4 ? learned : KANJI_ORDER.slice(0, 12)
+    if (mode.kind === 'unit') {
+      const unit = UNITS.find((u) => u.id === mode.id)
+      return unit ? buildQuiz(unit.kanji, [...new Set([...unit.kanji, ...pool])]).map((q) => ({ q, retry: false })) : []
+    }
     let chars: string[]
-    if (practice) {
+    if (mode.kind === 'practice') {
       // Freies Üben: die am wenigsten sicheren Kanji zuerst
       chars = [...learned].sort((a, b) => retrievability(progress[a].card) - retrievability(progress[b].card)).slice(0, 12)
+    } else if (mode.kind === 'all') {
+      chars = shuffle(learned).slice(0, mode.n > 0 ? mode.n : learned.length)
     } else {
       chars = dueChars(progress).slice(0, settings.reviewBatch)
     }
-    const pool = learned.length >= 4 ? learned : KANJI_ORDER.slice(0, 12)
     return shuffle(chars).map((c) => {
-      const t = pickType(progress[c]?.card, settings.writingInReviews)
+      // Quiz-Modi fragen wie Vokabeln ab – ohne Schreiben
+      const t = pickType(progress[c]?.card, mode.kind === 'all' ? false : settings.writingInReviews)
       const hard = (progress[c]?.card.stability ?? 0) > 10
       return { q: makeQuestion(c, t, pool, hard), retry: false }
     })
@@ -144,7 +160,7 @@ export function Review({ practice = false }: { practice?: boolean }) {
           </div>
         </div>
         <div className="spacer" />
-        <button className="btn block green" onClick={() => navigate('/', { replace: true })}>
+        <button className="btn block green" onClick={() => navigate(home, { replace: true })}>
           Fertig
         </button>
         <Confetti fire={fire} />
@@ -155,8 +171,12 @@ export function Review({ practice = false }: { practice?: boolean }) {
   const item = items[i]
   return (
     <main className="screen full review">
-      <SessionHeader progress={i / items.length} combo={combo} guard={i > 0 || answer !== null} exitTo="/" />
-      {practice && <div className="pill small" style={{ alignSelf: 'center', margin: '-4px 0 10px' }}>Freies Üben · beeinflusst die Planung nicht</div>}
+      <SessionHeader progress={i / items.length} combo={combo} guard={i > 0 || answer !== null} exitTo={home} />
+      {practice && (
+        <div className="pill small" style={{ alignSelf: 'center', margin: '-4px 0 10px' }}>
+          {modeLabel(mode)} · beeinflusst die Planung nicht
+        </div>
+      )}
       {item.q.type === 'write' ? (
         <WriteView
           key={'w' + i}
@@ -186,6 +206,15 @@ export function Review({ practice = false }: { practice?: boolean }) {
       )}
     </main>
   )
+}
+
+function modeLabel(mode: ReviewMode): string {
+  if (mode.kind === 'unit') {
+    const unit = UNITS.find((u) => u.id === mode.id)
+    return unit ? `Quiz ${unitLabel(unit).kicker}` : 'Quiz'
+  }
+  if (mode.kind === 'all') return 'Quiz gelernte Kanji'
+  return 'Freies Üben'
 }
 
 function NothingDue() {

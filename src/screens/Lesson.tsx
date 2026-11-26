@@ -3,7 +3,7 @@ import { KANJI_MAP, UNITS, unitLabel } from '../data/kanji'
 import { strokeCount } from '../data/strokes'
 import { useStore } from '../lib/store'
 import { navigate } from '../lib/router'
-import { makeQuestion, meaningLabel, type ChoiceQuestion } from '../lib/quiz'
+import { buildQuiz, meaningLabel, type ChoiceQuestion } from '../lib/quiz'
 import { shuffle } from '../lib/random'
 import { GRADE, type Grade } from '../lib/srs'
 import { XP } from '../lib/gamification'
@@ -16,23 +16,6 @@ import { Confetti, Stars, SpeakButton, TopBar } from '../components/ui'
 import { IconReplay } from '../components/Icons'
 
 type Step = { kind: 'intro'; char: string } | { kind: 'trace'; char: string } | { kind: 'free'; char: string } | { kind: 'quiz'; q: ChoiceQuestion; retry?: boolean }
-
-function buildQuiz(chars: string[], pool: string[]): ChoiceQuestion[] {
-  const qs: ChoiceQuestion[] = []
-  for (const c of chars) {
-    qs.push(makeQuestion(c, 'meaning', pool) as ChoiceQuestion)
-    qs.push(makeQuestion(c, 'kanji', pool) as ChoiceQuestion)
-  }
-  // Ein paar Lesungsfragen für Kontext
-  for (const c of shuffle(chars.filter((x) => KANJI_MAP[x].examples.length > 0)).slice(0, Math.ceil(chars.length / 2))) qs.push(makeQuestion(c, 'reading', pool) as ChoiceQuestion)
-  // Mischen, aber nicht zweimal hintereinander dasselbe Kanji
-  let best = shuffle(qs)
-  for (let tries = 0; tries < 30; tries++) {
-    if (best.every((q, i) => i === 0 || q.char !== best[i - 1].char)) break
-    best = shuffle(qs)
-  }
-  return best
-}
 
 export function Lesson({ unitId }: { unitId: number }) {
   const unit = UNITS.find((u) => u.id === unitId)

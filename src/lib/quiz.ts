@@ -98,6 +98,25 @@ export function makeQuestion(char: string, type: QType, pool: string[], hard = f
   return { type: 'reading', char, example: ex, answer: ex.r, options: shuffle([ex.r, ...readingDistractors(ex, 3)]) }
 }
 
+/** Quiz zu einer Gruppe Kanji: Bedeutung + Kanji erkennen je Zeichen, dazu einige Lesungsfragen. */
+export function buildQuiz(chars: string[], pool: string[]): ChoiceQuestion[] {
+  const qs: ChoiceQuestion[] = []
+  for (const c of chars) {
+    qs.push(makeQuestion(c, 'meaning', pool) as ChoiceQuestion)
+    qs.push(makeQuestion(c, 'kanji', pool) as ChoiceQuestion)
+  }
+  // Ein paar Lesungsfragen für Kontext
+  for (const c of shuffle(chars.filter((x) => KANJI_MAP[x].examples.length > 0)).slice(0, Math.ceil(chars.length / 2)))
+    qs.push(makeQuestion(c, 'reading', pool) as ChoiceQuestion)
+  // Mischen, aber nicht zweimal hintereinander dasselbe Kanji
+  let best = shuffle(qs)
+  for (let tries = 0; tries < 30; tries++) {
+    if (best.every((q, i) => i === 0 || q.char !== best[i - 1].char)) break
+    best = shuffle(qs)
+  }
+  return best
+}
+
 /** Wählt den Aufgabentyp passend zur Gedächtnisstabilität (Desirable Difficulties). */
 export function pickType(card: StoredCard | undefined, allowWrite: boolean, rnd: () => number = Math.random): QType {
   const st = card?.stability ?? 0
