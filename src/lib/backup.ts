@@ -4,16 +4,20 @@ import { snapshot, useStore, type PersistedState } from './store'
 
 export const BACKUP_REMIND_DAYS = 7
 
+/** Fester Name, damit eine vorhandene Sicherung (z. B. in Drive) einfach ersetzt werden kann.
+ *  Als .txt/text/plain, weil Chrome auf Android JSON-Dateien nicht über das Teilen-Menü weitergibt. */
+export const BACKUP_FILE_NAME = 'kanjimo-backup.txt'
+
 function backupFile(): File {
   const json = JSON.stringify({ app: 'kanjimo', exportedAt: new Date().toISOString(), data: snapshot() }, null, 2)
-  return new File([json], `kanjimo-sicherung-${dayKey()}.json`, { type: 'application/json' })
+  return new File([json], BACKUP_FILE_NAME, { type: 'text/plain' })
 }
 
 /** Kann dieses Gerät Dateien über das System-Teilen-Menü weitergeben? */
 export function canShareFiles(): boolean {
   try {
     if (typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return false
-    const probe = new File(['{}'], 'probe.json', { type: 'application/json' })
+    const probe = new File(['{}'], 'probe.txt', { type: 'text/plain' })
     return navigator.canShare({ files: [probe] })
   } catch {
     return false

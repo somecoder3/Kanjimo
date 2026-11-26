@@ -241,7 +241,7 @@ export function Settings() {
           <IconUpload width={22} height={22} />
           <span className="s-label">Sicherung importieren</span>
         </button>
-        <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => onFile(e.target.files?.[0])} />
+        <input ref={fileRef} type="file" accept="application/json,text/plain,.json,.txt" hidden onChange={(e) => onFile(e.target.files?.[0])} />
         <button className="setting setting-btn danger" onClick={() => setConfirmReset(true)}>
           <IconTrash width={22} height={22} />
           <span className="s-label">Fortschritt zurücksetzen</span>

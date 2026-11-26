@@ -6,3 +6,4 @@ dev-dist
 coverage
 scripts/.cache
 scripts/.work
+*.tsbuildinfo
