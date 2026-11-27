@@ -9,6 +9,11 @@ import { sfx, buzz } from '../lib/feedback'
 import { SessionHeader, WriteView } from '../components/Session'
 import { Mo } from '../components/Mo'
 import { Confetti } from '../components/ui'
+import { weightedSample } from '../lib/random'
+
+const ROUND_SIZE = 8
+/** Grundgewicht, damit auch gut sitzende Kanji ab und zu drankommen. */
+const WEIGHT_FLOOR = 0.15
 
 /** Freies Schreibtraining: einzelnes Kanji (trace → frei) oder Runde mit gelernten Kanji. */
 export function WritePractice({ char }: { char?: string }) {
@@ -17,12 +22,20 @@ export function WritePractice({ char }: { char?: string }) {
   const addXp = useStore((s) => s.addXp)
 
   const [round, setRound] = useState(0)
+  // Kanji der vorigen Runde – bei „Noch eine Runde“ möglichst nicht gleich wieder.
+  const [prev, setPrev] = useState<string[]>([])
   const plan = useMemo(() => {
     if (char && KANJI_MAP[char]) return [{ c: char, mode: 'trace' as const }, { c: char, mode: 'free' as const }, { c: char, mode: 'free' as const }]
     const learned = Object.keys(progress)
-    const base = learned.length ? learned : KANJI_ORDER.slice(0, 5)
-    const sorted = [...base].sort((a, b) => (progress[a] ? retrievability(progress[a].card) : 0) - (progress[b] ? retrievability(progress[b].card) : 0))
-    return sorted.slice(0, 8).map((c) => ({ c, mode: progress[c] ? ('free' as const) : ('trace' as const) }))
+    if (!learned.length) return KANJI_ORDER.slice(0, 5).map((c) => ({ c, mode: 'trace' as const }))
+    // Gewichtet würfeln: schwache Kanji kommen öfter dran, aber gleich bewertete werden fair gemischt.
+    const weight = (c: string) => WEIGHT_FLOOR + (1 - retrievability(progress[c].card))
+    const fresh = learned.filter((c) => !prev.includes(c))
+    const picked = weightedSample(fresh, ROUND_SIZE, weight)
+    if (picked.length < ROUND_SIZE) picked.push(...weightedSample(learned.filter((c) => prev.includes(c)), ROUND_SIZE - picked.length, weight))
+    // Innerhalb der Runde zuerst die schwächsten.
+    picked.sort((a, b) => retrievability(progress[a].card) - retrievability(progress[b].card))
+    return picked.map((c) => ({ c, mode: 'free' as const }))
   }, [char, round])
 
   const [i, setI] = useState(0)
@@ -57,6 +70,7 @@ export function WritePractice({ char }: { char?: string }) {
               setXp(0)
               setClean(0)
               setDone(false)
+              setPrev(plan.map((p) => p.c))
               setRound((r) => r + 1)
             }}>
             Noch eine Runde
